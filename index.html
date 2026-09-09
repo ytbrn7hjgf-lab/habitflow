@@ -426,6 +426,8 @@ input, select {
       </div>
       <div class="actions">
         <button class="btn" onclick="exportData()">Daten exportieren</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()">Daten importieren</button>
+        <input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importData(this.files[0]); this.value='';">
         <button class="btn" onclick="resetData()">Zurücksetzen</button>
       </div>
     </div>
@@ -602,9 +604,41 @@ function editHabit(i,k,v){habits[i][k]=v;save();render()}
 function addHabit(){habits.push({id:"h"+Date.now(),name:"Neue Gewohnheit",cat:"Allgemein",active:true,color:COLORS[habits.length%COLORS.length]});save();render()}
 function removeHabit(i){if(confirm("Gewohnheit wirklich löschen?")){habits.splice(i,1);save();render()}}
 function exportData(){
-  const blob=new Blob([JSON.stringify({habits,entries},null,2)],{type:"application/json"});
+  const backup={version:1,exportedAt:new Date().toISOString(),habits,entries};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="habitflow-backup.json";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   toast("Backup exportiert");
+}
+function importData(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.habits) || !data.entries || typeof data.entries!=="object" || Array.isArray(data.entries)) throw new Error("Ungültiges Backup");
+      const importedHabits=data.habits.map((h,i)=>({
+        id:String(h.id||("h"+Date.now()+"_"+i)),
+        name:String(h.name??"Neue Gewohnheit"),
+        cat:String(h.cat??"Allgemein"),
+        active:h.active!==false,
+        color:/^#[0-9a-fA-F]{6}$/.test(String(h.color||""))?String(h.color):COLORS[i%COLORS.length]
+      }));
+      const importedEntries={};
+      Object.entries(data.entries).forEach(([key,value])=>{if(value) importedEntries[String(key)]=true;});
+      if(!confirm("Das aktuelle HabitFlow-Set wird durch das Backup ersetzt. Fortfahren?"))return;
+      habits=importedHabits;
+      entries=importedEntries;
+      save();
+      weekStart=monday(new Date());
+      render();
+      toast("Backup importiert");
+    }catch(e){
+      alert("Dieses Backup konnte nicht importiert werden. Bitte wähle eine gültige HabitFlow-Backup-Datei aus.");
+    }
+  };
+  reader.onerror=()=>alert("Die Datei konnte nicht gelesen werden.");
+  reader.readAsText(file);
 }
 function resetData(){if(confirm("Alle Check-ins und Gewohnheiten auf den Startzustand zurücksetzen?")){localStorage.clear();location.reload()}}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
