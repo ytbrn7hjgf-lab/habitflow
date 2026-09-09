@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Habit Tracker</title>
-<meta name="theme-color" content="#111827">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
@@ -78,6 +79,39 @@
   .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
   .hidden{display:none!important}
   .empty{padding:35px;text-align:center;color:var(--muted)}
+
+  /* ===== Automatic dark mode ===== */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg:#0b1020;
+      --card:#151b2d;
+      --text:#e8edf5;
+      --muted:#9aa6bb;
+      --line:#293247;
+      --primary:#7c86ff;
+      --primary2:#252b4a;
+      --success:#35c17a;
+      --danger:#ff7070;
+      --shadow:0 8px 30px rgba(0,0,0,.28);
+    }
+
+    body { background:var(--bg); color:var(--text); }
+    .btn { background:var(--card); color:var(--text); }
+    .btn.primary { background:var(--primary); color:#fff; }
+    .card, table { background:var(--card); }
+    th { background:#1b2235; }
+    .cell { background:#171e30; border-color:var(--line); }
+    .cell:hover { border-color:#5964b8; }
+    .progress { background:#252c3d; }
+    .month-controls input,
+    td input,
+    td select { background:#111827; color:var(--text); border-color:var(--line); }
+    .calendar .day { background:#1b2233; border-color:var(--line); }
+    .calendar .day.done { border-color:transparent; }
+    .swatch { border-color:#475067; }
+    .toast { background:#f1f5f9; color:#111827; }
+  }
   .toast{position:fixed;right:20px;bottom:20px;background:#111827;color:#fff;padding:11px 15px;border-radius:10px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.2s}
   .toast.show{opacity:1;transform:none}
   @media(max-width:950px){
